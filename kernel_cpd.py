@@ -6,14 +6,15 @@ import os
 import pandas as pd
 from scipy import stats
 from scipy.stats import poisson
-
+# w: window size of each interval
+ 
 class KernelCPD:
     def __init__(self, w: int = 20, gamma: float = 1.0, process_type: str = 'normal'):
         """
         Initialize the Kernel Change Point Detection class
         
         Parameters:
-            w: Window size for MMD computation
+            w: Window size for MMD computation, I set it to 20
             gamma: Parameter for RBF kernel
             process_type: Type of process ('normal' or 'cox')
         """
@@ -69,6 +70,8 @@ class KernelCPD:
         Returns:
             change_points: List of detected change point locations
         """
+        threshold = np.mean(scores) + 2 * np.std(scores)
+        # threshold = np.percentile(scores, 95)
         if threshold is not None:
             change_points = np.where(scores > threshold)[0]
         else:
