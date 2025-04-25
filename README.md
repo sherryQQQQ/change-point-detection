@@ -23,6 +23,6 @@ The analysis helps us understand how well our prediction model performs and wher
 The latest version (v2) introduces a kernel-based Maximum Mean Discrepancy (MMD) approach for change point detection with the following enhancements:
 
 - Using the past the data to simulate data in the next interval
-- 
+- Including both linear regression and stepwise function prediction
 ### Usage Example
 Data: Cox Process Simulation data with different initial values (5,80) and different breaks M (500,5000).
