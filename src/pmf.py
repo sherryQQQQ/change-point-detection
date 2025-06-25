@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
 import scipy.stats as st
+import math
+
 '''
 build_P_list & transient_distribution_uniformization: For one step situation
 _build_P & transient_distribution_piecewise: For multiple steps situation
@@ -147,6 +149,7 @@ def transient_distribution_piecewise(
     assert 0.0 < t <= T, "`t` must lie in (0, total horizon]"
 
     lam = m * mu + np.max(Z_piece)          # uniformisation rate
+
     P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece] # multiple piece-wise function has multiple state
 
     # initial distribution p(0)
@@ -179,29 +182,32 @@ def transient_distribution_piecewise(
 
         p = p @ Phi
 
-        # # adaptive enlargement
-        # if p[-1] > eps_state:
-        #     print('adaptive enlargement initiated')
-        #     extra = int(N * 0.5) + 10
-        #     p = np.pad(p, (0, extra))
-        #     N += extra
-        #     P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
-        #     # Reset P_pow to identity matrix with new dimensions
-        #     P_pow = sp.eye(N + 1, format='csr')
-        #     # Recalculate Phi with new dimensions
-        #     Phi = np.exp(-lam_dt) * sp.eye(N + 1, format='csr')
-        #     # Continue the Poisson sum with updated dimensions
-        #     for a in range(1, A + 1):
-        #         P_pow = P_pow @ Pk
-        #         weight = np.exp(-lam_dt) * (lam_dt ** a) / np.math.factorial(a)
-        #         Phi += weight * P_pow
-        # if p[-1] > eps_state:
-        #     print('adpative enlargement initiated')
-        #     extra = int(N * 0.5) + 10
-        #     p     = np.pad(p, (0, extra))
-        #     N    += extra
-        #     P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
+    # adaptive enlargement loop (re-entered only if tail heavy)
+    while p[-1] > eps_state:
+        tail = p[-1]
+        extra = int(N * 0.5) + 10
+        N +=extra
 
+        p = np.pad(p, (0, extra))
+
+
+        P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
+        Pk     = P_list[len(P_list) - len(dt_piece)]  # same index as outside
+
+        # ----- redo Φ^{(k)} with the larger size ----------------------------
+        lam_dt = lam * dt_k
+        A      = st.poisson.isf(eps_poiss, lam_dt).astype(int) + 1
+        weight = np.exp(-lam_dt)
+        Phi    = weight * sp.eye(N + 1, format='csr')
+        P_pow  = sp.eye(N + 1, format='csr')
+        for a in range(1, A + 1):
+            P_pow  = P_pow @ Pk
+            weight *= lam_dt / a
+            Phi    += weight * P_pow
+
+        # overwrite p for this block and re-check the tail
+        p = p[:N+1] @ Phi
+        
     return p[:N + 1]        # final distribution at time t
 
 
