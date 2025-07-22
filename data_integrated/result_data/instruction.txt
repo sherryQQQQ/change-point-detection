@@ -1,0 +1,1 @@
+result_data for change point detection in mdd

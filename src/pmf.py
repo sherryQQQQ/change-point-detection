@@ -117,23 +117,24 @@ def transient_distribution_uniformization(
 def _build_P(z_avg, mu, m, lam, N):
     """Sparse tri-diagonal transition matrix for a single block."""
     i     = np.arange(N + 1)
-    mu_i  = np.minimum(i, m) * mu           # total departure in state i
-
+    mu_i  = np.minimum(i, m) * mu           # total departure/service rate in state i
+ 
     up    = np.full(N, z_avg / lam)
-    down  = mu_i[1:] / lam
+    down  = np.full(N, mu_i[1:] / lam)
+    down[0] = mu / lam
     diag  = 1.0 - (z_avg + mu_i) / lam
     diag[0]  = 1.0 - z_avg     / lam
     diag[-1] = 1.0 - mu_i[-1]  / lam
 
     return sp.diags([up, diag, down], [1, 0, -1],
                     shape=(N + 1, N + 1), format='csr')
-    
+
 def transient_distribution_piecewise(
         Z_piece,          # 1-D array of length K  (arrival rates per block)
         dt_piece,         # 1-D array of same length (block durations)
         mu,               # service rate per server
         m=1,              # number of servers
-        t=1.0,            # target time
+        t=1.0,             # target time
         N=50,             # initial state-space size
         p0_idx=0,         # initial state
         eps_poiss=1e-8,   # Poisson tail tolerance
@@ -148,17 +149,20 @@ def transient_distribution_piecewise(
     T = dt_piece.sum()
     assert 0.0 < t <= T, "`t` must lie in (0, total horizon]"
 
-    lam = m * mu + np.max(Z_piece)          # uniformisation rate
-
-    P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece] # multiple piece-wise function has multiple state
-
+    # lam = m * mu + np.max(Z_piece)          # uniformisation rate
+    P_list = [_build_P(z, mu, m, m*mu+z, N) for z in Z_piece] # multiple piece-wise function has multiple state
+    lam_list = [m*mu+z for z in Z_piece]
+    # calculate N
+        # estimated load   = lam/ mu
+        # N = estimated load/ (1-load)
+    
     # initial distribution p(0)
     p = np.zeros(N + 1)
-    p[p0_idx] = 1.0
+    p[0] = 1.0
 
     # iterate over blocks until reaching time t
     elapsed = 0.0
-    for Pk, dt_full in zip(P_list, dt_piece):
+    for Pk, lam, dt_full in zip(P_list,lam_list, dt_piece):
         if elapsed >= t:
             break
 
@@ -167,48 +171,57 @@ def transient_distribution_piecewise(
         elapsed += dt_k
 
         # Poisson-weighted sum phi^{(k)}(Δt_k)
+        
         lam_dt = lam * dt_k
         A      = st.poisson.isf(eps_poiss, lam_dt).astype(int) + 1 # Truncated A
         weight = np.exp(-lam_dt)                        # a = 0
-        Phi    = weight * sp.eye(N + 1, format='csr')
+        Phi    = weight * sp.eye(N + 1, format='csr') #a=0 added
         P_pow  = sp.eye(N + 1, format='csr')
         # print('A', A)
-        for a in range(1, A + 1):
-            
-            # print(P_pow.shape, Pk.shape)
+        for a in range(1, A + 1):     
             P_pow  = P_pow @ Pk
             weight *= lam_dt / a 
             Phi    += weight * P_pow
+            # print('Phi', Phi.shape, P_pow.shape)
 
         p = p @ Phi
 
-    # adaptive enlargement loop (re-entered only if tail heavy)
-    while p[-1] > eps_state:
-        tail = p[-1]
-        extra = int(N * 0.5) + 10
-        N +=extra
+        # # adaptive enlargement
+        # if p[-1] > eps_state:
+        #     print('adaptive enlargement initiated')
+        #     extra = int(N * 0.5) + 10
+        #     p = np.pad(p, (0, extra))
+        #     N += extra
+        #     P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
+        #     # Reset P_pow to identity matrix with new dimensions
+        #     P_pow = sp.eye(N + 1, format='csr')
+        #     # Recalculate Phi with new dimensions
+        #     Phi = np.exp(-lam_dt) * sp.eye(N + 1, format='csr')
+        #     # Continue the Poisson sum with updated dimensions
+        #     for a in range(1, A + 1):
+        #         P_pow = P_pow @ Pk
+        #         weight = np.exp(-lam_dt) * (lam_dt ** a) / np.math.factorial(a)
+        #         Phi += weight * P_pow
+        # if p[-1] > eps_state:
+        #     print('adpative enlargement initiated')
+        #     extra = int(N * 0.5) + 10
+        #     p     = np.pad(p, (0, extra))
+        #     N    += extra
+        #     P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
 
-        p = np.pad(p, (0, extra))
-
-
-        P_list = [_build_P(z, mu, m, lam, N) for z in Z_piece]
-        Pk     = P_list[len(P_list) - len(dt_piece)]  # same index as outside
-
-        # ----- redo Φ^{(k)} with the larger size ----------------------------
-        lam_dt = lam * dt_k
-        A      = st.poisson.isf(eps_poiss, lam_dt).astype(int) + 1
-        weight = np.exp(-lam_dt)
-        Phi    = weight * sp.eye(N + 1, format='csr')
-        P_pow  = sp.eye(N + 1, format='csr')
-        for a in range(1, A + 1):
-            P_pow  = P_pow @ Pk
-            weight *= lam_dt / a
-            Phi    += weight * P_pow
-
-        # overwrite p for this block and re-check the tail
-        p = p[:N+1] @ Phi
-        
     return p[:N + 1]        # final distribution at time t
 
 
  
+if __name__ == "__main__":
+    Z_piece = [5, 80]
+    dt_piece = [1, 5]
+    mu = 10
+    m = 1
+    t = 1
+    N = 100
+    p0_idx = 0
+    eps_poiss = 1e-8
+    eps_state = 1e-9
+    p = transient_distribution_piecewise(Z_piece, dt_piece, mu, m, t, N, p0_idx, eps_poiss, eps_state)
+    print(p)
