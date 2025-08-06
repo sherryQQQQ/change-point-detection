@@ -7,6 +7,8 @@ import time
 # Parameters
 Z_initial_value = 5 # 5 (transient) or 80 (stationary)
 
+v = 2 # Version of the simulation: 1 (original), 2 (test new arrival rates with fixed UB)
+
 if Z_initial_value == 5:
     service_rate = 10
 elif Z_initial_value == 80:
@@ -18,11 +20,10 @@ else:
 t0 = 1
 t1 = 5
 time_horizon = 6 # Simulation time horizon
-replicas = 10**8 # Number of replicas for the simulation
+replicas = 10**7 # Number of replicas for the simulation
 
 # Import Cox arrival rate from csv file named initial_value_{Z_initial_value}_samples_.csv in folder Data with pandas
-Z_data_path = '/Users/qianxinhui/Desktop/NU-Research/kellogg/change-point-detection/data_integrated/arrival_data'   
-Z_data = pd.read_csv(os.path.join(Z_data_path, f"initial_value_{Z_initial_value}_samples_500.csv"))
+Z_data = pd.read_csv(os.path.join('./Data', f"initial_value_{Z_initial_value}_samples_500.csv"))
 Z = Z_data[['time', 'value']].to_numpy() # Column 0 has time, column 1 has arrival rate at that time
 Z_T = 10 # Time horizon for simulation of Z
 Z_M = 500 # Number of samples in Z
@@ -30,18 +31,22 @@ Z_M = 500 # Number of samples in Z
 ##### Define arrival generator function
 
 def gen_next_arrival_time(clock, # Current time
-                        Z, # Arrival rate process (col 0 has time, col 1 has arrival rate at that time)
-                        T # Simulation time horizon
-                        ):
+                          Z, # Arrival rate process (col 0 has time, col 1 has arrival rate at that time)
+                          T # Simulation time horizon
+                          ):
     step_size = 0.02
 
     if clock < T:
-        z_future = Z[int(clock/step_size):int(T/step_size),1]
-
-        UB = 1.1*max(z_future) # Upper bound for the arrival rate
+        if v == 1:
+            z_future = Z[int(clock/step_size):int(T/step_size),1]
+            UB = 1.1*max(z_future) # Upper bound for the arrival rate
+        elif v == 2:
+            UB = 1.1*max(Z[:,1])
+        
+        # Start thinning algorithm
         u = UB # Uniform random variable to generate next arrival time
         arr_time = clock # Next arrival time to be generated
-        
+
         while arr_time < T and Z[int(arr_time/step_size), 1] <= u:
             u = np.random.uniform(0, UB)
             arr_time += np.random.exponential(scale=1/UB)
@@ -51,21 +56,6 @@ def gen_next_arrival_time(clock, # Current time
         return 3*T  # If clock is greater than T, return a large number to avoid further arrivals
 
 
-def gen_next_arrival_time_2(clock, Z, T):
-    step_size = 0.02
-    UB = 1.1 * max(Z[int(clock / step_size):int(T / step_size), 1])  # Upper bound
-
-    arr_time = clock
-    while True:
-        arr_time += np.random.exponential(scale=1 / UB)
-        if arr_time >= T:
-            return 3 * T
-
-        index = min(int(arr_time / step_size), len(Z) - 1)
-        lam = Z[index, 1]
-        u = np.random.uniform()
-        if u <= lam / UB:
-            return arr_time
 
 ##### Run simulation
 
@@ -118,17 +108,21 @@ for r in range(replicas):
 
 end_sim = time.time()
 
-save_path = '/Users/qianxinhui/Desktop/NU-Research/kellogg/change-point-detection/data_integrated/simulation_data'
-os.makedirs(save_path, exist_ok=True)
 
-# Save simulation data at times t0 and t1 in addition to the previous simulations
-filename = os.path.join(save_path,"CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t0))
-with open(filename, 'wb') as f:
-    pickle.dump(X0, f)
+# Save simulation data at times t0 and t1
+if v == 1: # Original simulation that yields strange histograms
+    filename0 = os.path.join('./Data',"CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t0))
+    filename1 = os.path.join('./Data',"CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t1))
+elif v == 2: # New simulation that corrects arrival rates to always use same UB
+    filename0 = os.path.join('./Data',"CoxM1_Z0{}_serv{}_t{}_v2.pickle".format(Z_initial_value, service_rate, t0))
+    filename1 = os.path.join('./Data',"CoxM1_Z0{}_serv{}_t{}_v2.pickle".format(Z_initial_value, service_rate, t1))
 
-filename = os.path.join(save_path,"CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t1))
-with open(filename, 'wb') as f:
-    pickle.dump(X1, f)
+
+with open(filename0, 'wb') as f:
+   pickle.dump(X0, f)
+
+with open(filename1, 'wb') as f:
+   pickle.dump(X1, f)
 
 end_save = time.time()
 

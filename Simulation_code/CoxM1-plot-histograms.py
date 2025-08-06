@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import pickle
 import os.path
 
+v = 2 # Version of the simulation
+    # v=1 for UB variable for arrival rate generation
+    # v=2 for UB fixed (newer code)
+
 Z_initial_value = 80 # 5 or 80 (initial value for simulation of arrival rate Z)
 
 if Z_initial_value == 5:
@@ -21,7 +25,10 @@ fig, axs = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
 
 for i, t in enumerate(t_values):
     # Load histogram information
-    hist_name = os.path.join('/Users/qianxinhui/Desktop/NU-Research/kellogg/change-point-detection/Simulation_histograms', "for_histogram_CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t))
+    if v == 1:
+        hist_name = os.path.join('./Figures', "for_histogram_CoxM1_Z0{}_serv{}_t{}.pickle".format(Z_initial_value, service_rate, t))
+    elif v == 2:
+        hist_name = os.path.join('./Figures', "for_histogram_CoxM1_Z0{}_serv{}_t{}_v2.pickle".format(Z_initial_value, service_rate, t))
     with open(hist_name, 'rb') as f:
         hist_data = pickle.load(f)
 
