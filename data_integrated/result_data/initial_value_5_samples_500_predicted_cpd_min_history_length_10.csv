@@ -1,0 +1,109 @@
+,predictor,summary_metrics,detailed_results
+mse,<__main__.OLScpdPredictor object at 0x7f0222638970>,4.3781828572344965,
+rmse,<__main__.OLScpdPredictor object at 0x7f0222638970>,2.0924107764094737,
+mae,<__main__.OLScpdPredictor object at 0x7f0222638970>,1.588848376999971,
+mape,<__main__.OLScpdPredictor object at 0x7f0222638970>,3.062002064490942,
+direction_accuracy,<__main__.OLScpdPredictor object at 0x7f0222638970>,55.800000000000004,
+confidence_coverage,<__main__.OLScpdPredictor object at 0x7f0222638970>,100.0,
+n_predictions,<__main__.OLScpdPredictor object at 0x7f0222638970>,501.0,
+mean_prediction,<__main__.OLScpdPredictor object at 0x7f0222638970>,57.58393564358219,
+mean_actual,<__main__.OLScpdPredictor object at 0x7f0222638970>,57.47420664393207,
+predicted_value,<__main__.OLScpdPredictor object at 0x7f0222638970>,,[]
+value,<__main__.OLScpdPredictor object at 0x7f0222638970>,,[]
+prediction_errors,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0      0.893815
+1     -0.177074
+2     -0.716741
+3      0.286707
+4      0.274872
+         ...   
+496    2.664572
+497    0.575982
+498   -1.275905
+499   -0.388795
+500    0.327406
+Length: 501, dtype: float64"
+stepwise_value,<__main__.OLScpdPredictor object at 0x7f0222638970>,,[]
+predicted_step_function_time_interval,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0      0.00
+1      0.02
+2      0.02
+3      0.02
+4      0.02
+       ... 
+496    0.02
+497    0.02
+498    0.02
+499    0.02
+500    0.02
+Name: time, Length: 501, dtype: float64"
+prediction_times,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       0.00
+1       0.02
+2       0.04
+3       0.06
+4       0.08
+       ...  
+496     9.92
+497     9.94
+498     9.96
+499     9.98
+500    10.00
+Name: time, Length: 501, dtype: float64"
+predictions,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       5.893815
+1       5.893815
+2       5.893815
+3       7.504372
+4       8.309650
+         ...    
+496    66.004658
+497    66.543848
+498    66.335829
+499    67.268747
+500    68.201665
+Name: predicted_value, Length: 501, dtype: float64"
+actual_values,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       5.000000
+1       6.070890
+2       6.610556
+3       7.217665
+4       8.034778
+         ...    
+496    63.340086
+497    65.967866
+498    67.611734
+499    67.657542
+500    67.874259
+Name: value, Length: 501, dtype: float64"
+predicted_step_function,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       5.893815
+1       5.893815
+2       5.893815
+3       8.309650
+4       8.309650
+         ...    
+496    66.004658
+497    66.004658
+498    67.268747
+499    67.268747
+500    67.268747
+Name: stepwise_value, Length: 501, dtype: float64"
+confidence_lower,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       4.141937
+1       5.546750
+2       4.489003
+3       6.942427
+4       7.770901
+         ...    
+496    60.782097
+497    65.414923
+498    63.835055
+499    66.506710
+500    67.559949
+Length: 501, dtype: float64"
+confidence_upper,<__main__.OLScpdPredictor object at 0x7f0222638970>,,"0       7.645693
+1       6.240881
+2       7.298628
+3       8.066316
+4       8.848398
+         ...    
+496    71.227219
+497    67.672772
+498    68.836603
+499    68.030784
+500    68.843381
+Length: 501, dtype: float64"
