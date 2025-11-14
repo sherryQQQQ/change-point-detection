@@ -1,0 +1,101 @@
+,predictor,summary_metrics,detailed_results
+mse,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,82.02426724175639,
+rmse,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,9.056724973286778,
+mae,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,6.5739404787843965,
+mape,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,13.000687586163748,
+direction_accuracy,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,48.178137651821864,
+confidence_coverage,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,95.0,
+n_predictions,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,495.0,
+mean_prediction,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,60.18454500104615,
+mean_actual,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,57.369745479179976,
+error_std,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,8.60820369725638,
+avg_changepoint_prob,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,0.017820196868706974,
+max_changepoint_prob,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,0.03485545171766796,
+n_changepoints_detected,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,0.0,
+predicted_value,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,[]
+value,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,[]
+prediction_errors,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0      9.540963
+1      8.470074
+2      7.930407
+3      7.323298
+4      6.506185
+         ...   
+496         NaN
+497         NaN
+498         NaN
+499         NaN
+500         NaN
+Length: 501, dtype: float64"
+stepwise_value,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,[]
+predicted_step_function_time_interval,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0      0.00
+1      0.02
+2      0.02
+3      0.02
+4      0.02
+       ... 
+496    0.02
+497    0.02
+498    0.02
+499    0.02
+500    0.02
+Name: time, Length: 501, dtype: float64"
+changepoint_probs,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0      5.000000e-11
+1      1.010000e-02
+2      1.019139e-02
+3      1.029345e-02
+4      1.039448e-02
+           ...     
+496    1.520300e-02
+497    1.531134e-02
+498    1.542051e-02
+499    1.552999e-02
+500    1.563928e-02
+Name: changepoint_prob, Length: 501, dtype: float64"
+prediction_times,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0       0.00
+1       0.02
+2       0.04
+3       0.06
+4       0.08
+       ...  
+496     9.92
+497     9.94
+498     9.96
+499     9.98
+500    10.00
+Name: time, Length: 501, dtype: float64"
+predictions,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0      14.540963
+1      14.540963
+2      14.540963
+3      14.540963
+4      14.540963
+         ...    
+496          NaN
+497          NaN
+498          NaN
+499          NaN
+500          NaN
+Name: predicted_value, Length: 501, dtype: float64"
+actual_values,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0       5.000000
+1       6.070890
+2       6.610556
+3       7.217665
+4       8.034778
+         ...    
+496    63.340086
+497    65.967866
+498    67.611734
+499    67.657542
+500    67.874259
+Name: value, Length: 501, dtype: float64"
+predicted_step_function,<predictor.bayesian_online.BOOLES_cpdPredictor object at 0x137d49390>,,"0      14.540963
+1      14.540963
+2      14.540963
+3      14.540963
+4      14.540963
+         ...    
+496          NaN
+497          NaN
+498          NaN
+499          NaN
+500          NaN
+Name: stepwise_value, Length: 501, dtype: float64"
