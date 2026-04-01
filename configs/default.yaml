@@ -1,0 +1,15 @@
+method: bayesian
+hazard_lambda: 100.0
+mu0: 0.0
+kappa0: 1.0
+alpha0: 1.0
+beta0: 1.0
+alarm_threshold: 0.015
+alarm_min_consecutive: 1
+min_history_length: 5
+window_size: 3
+verbose: true
+plot: true
+kalman_a: 0.3
+kalman_b: 80.0
+cpd_gamma: null

@@ -134,14 +134,21 @@ def transient_distribution_piecewise(
         dt_piece,         # 1-D array of same length (block durations)
         mu,               # service rate per server
         m=1,              # number of servers
-        t=1.0,             # target time
-        N=50,             # initial state-space size
+        t=1.0,            # target time
+        N=50,             # initial state-space size (raised automatically when auto_N=True)
         p0_idx=0,         # initial state
         eps_poiss=1e-8,   # Poisson tail tolerance
-        eps_state=1e-9):  # tolerated mass in last state
+        eps_state=1e-9,   # tolerated mass in last state
+        auto_N=True,      # auto-size N from load estimate (never lowers N below given value)
+        N_max=5000):      # hard cap on auto-sized N
     """
     Transient distribution p(t) for an M/M/m queue with piece-wise *unequal*
     constant arrival rates.
+
+    auto_N=True (default): estimates a safe state-space size from the max
+    arrival rate and target time so the PMF is never truncated at the boundary.
+    For stable queues (rho < 0.99) uses the M/M/1 steady-state mean ± 6 std;
+    for overloaded/near-critical queues uses a linear-growth bound.
     """
     Z_piece  = np.asarray(Z_piece,  dtype=float)
     dt_piece = np.asarray(dt_piece, dtype=float)
@@ -149,12 +156,22 @@ def transient_distribution_piecewise(
     T = dt_piece.sum()
     assert 0.0 < t <= T, "`t` must lie in (0, total horizon]"
 
+    # Auto-size state-space to avoid truncation
+    if auto_N:
+        Z_eff = float(np.max(Z_piece))
+        rho   = Z_eff / (m * mu)
+        if rho < 0.99:
+            mean_q = rho / (1.0 - rho)
+            std_q  = np.sqrt(rho) / (1.0 - rho)
+            N = max(N, int(mean_q + 6.0 * std_q + 20))
+        else:
+            # overloaded or near-critical: queue grows ~linearly in t
+            N = max(N, int(Z_eff * t * 1.5 + 100))
+        N = min(N, N_max)
+
     # lam = m * mu + np.max(Z_piece)          # uniformisation rate
     P_list = [_build_P(z, mu, m, m*mu+z, N) for z in Z_piece] # multiple piece-wise function has multiple state
     lam_list = [m*mu+z for z in Z_piece]
-    # calculate N
-        # estimated load   = lam/ mu
-        # N = estimated load/ (1-load)
     
     # initial distribution p(0)
     p = np.zeros(N + 1)

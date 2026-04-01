@@ -17,9 +17,10 @@ import matplotlib.pyplot as plt
 
 Z_initial_value = 20
 service_rate = 30.0
-#   5  → a=0.3, b=80,  service_rate=10 or 30
+#   5  → a=0.3, b=80,  service_rate=10  
 #   80 → a=0.3, b=80,  service_rate=100
 #   70 → a=0.3, b=150, service_rate=100
+#   5  → a=0.3, b=80,  service_rate=10 or 30
 
 v = 2
 

@@ -1,0 +1,6 @@
+# Shared simulation parameters read by Simulation_code/ scripts
+mu: 100.0        # service rate
+lambda_init: 80.0  # initial arrival rate
+T: 6.0           # simulation horizon
+n_simulations: 100
+seed: 42

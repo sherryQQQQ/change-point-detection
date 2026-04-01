@@ -6,6 +6,95 @@ import seaborn as sns
 from sklearn.metrics.pairwise import rbf_kernel
 import statsmodels.api as sm
     
+def _adaptive_window_size(values_so_far, lambda_=0.94, w_min=3, w_max=15, lookback=20,
+                          _running_std_max=None):
+    """
+    Compute adaptive window size based on rolling std normalized by its running max.
+
+    High volatility (rolling_std near its historical max) -> small window (w_min).
+    Low volatility  (rolling_std near zero)                -> large window (w_max).
+    Only uses past data (causal, no lookahead).
+
+    Parameters
+    ----------
+    _running_std_max : float or None
+        Pre-computed running maximum of rolling stds.  When supplied by the
+        caller (who maintains it incrementally) the O(n) loop is skipped,
+        reducing per-call cost from O(n) to O(lookback).
+    """
+    n = len(values_so_far)
+    if n < w_min + 1:
+        return w_min
+
+    if _running_std_max is None:
+        # O(n) fallback when no cached value is available
+        _running_std_max = 0.0
+        for j in range(1, n):
+            start = max(0, j - lookback)
+            s = np.std(values_so_far[start:j + 1])
+            if s > _running_std_max:
+                _running_std_max = s
+
+    if _running_std_max < 1e-12:
+        return w_max
+
+    # Current rolling std (O(lookback))
+    start = max(0, n - 1 - lookback)
+    rolling_std_now = np.std(values_so_far[start:n])
+
+    v_t = rolling_std_now / _running_std_max  # in [0, 1]
+    ws = int(w_min + (w_max - w_min) * (1 - v_t))
+    return max(w_min, min(ws, w_max))
+
+
+def _adaptive_window_size_ewma(values_so_far, lambda_=0.94, w_min=3, w_max=15,
+                               span=None):
+    """
+    Compute adaptive window size using Exponentially Weighted Moving Average
+    of absolute returns as a volatility proxy.
+
+    Parameters
+    ----------
+    values_so_far : array-like
+        All observed values up to the current time (causal).
+    lambda_ : float
+        EWMA decay factor (higher = more memory).
+    w_min, w_max : int
+        Bounds on window size.
+    span : int or None
+        If provided, overrides lambda_ via lambda_ = 1 - 2/(span+1).
+
+    Returns
+    -------
+    int : adaptive window size in [w_min, w_max].
+    """
+    n = len(values_so_far)
+    if n < w_min + 1:
+        return w_min
+
+    if span is not None:
+        lambda_ = 1.0 - 2.0 / (span + 1)
+
+    # Compute EWMA volatility of absolute differences
+    abs_diffs = np.abs(np.diff(values_so_far))
+    if len(abs_diffs) == 0:
+        return w_max
+
+    ewma_vol = abs_diffs[0]
+    ewma_max = ewma_vol
+    for d in abs_diffs[1:]:
+        ewma_vol = lambda_ * ewma_vol + (1 - lambda_) * d
+        if ewma_vol > ewma_max:
+            ewma_max = ewma_vol
+
+    if ewma_max < 1e-12:
+        return w_max
+
+    v_t = ewma_vol / ewma_max  # in [0, 1]
+    ws = int(w_min + (w_max - w_min) * (1 - v_t))
+    return max(w_min, min(ws, w_max))
+
+
 def mmd_statistic(x, y, gamma):
     """
     Compute the Maximum Mean Discrepancy (MMD) between two samples.
